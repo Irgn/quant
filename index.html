@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>New York Times API by Irgn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">New York Times API</h1>
+      <h2 class="project-tagline">Getting Comments from specific articles with the New York Times API</h2>
+      <a href="https://github.com/Irgn/quant" class="btn">View on GitHub</a>
+      <a href="https://github.com/Irgn/quant/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Irgn/quant/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h3>
+<a id="while-there-is-a-python-wrapper-for-the-new-york-times-article-search-api-getting-article-comments-necessitates-the-use-of-the-new-york-time-api-directly-compared-to-the-article-search-wrapper-there-are-additional-differences-in-parsing-the-results-in-this-example-we-are-querying-for-the-term-misconduct-in-an-articles-body-byline-and-headline-and-filter-this-through-those-articles-that-contain-facebook-in-the-headline-and-where-the-source-is-either-reuters-the-ap-or-the-new-york-times" class="anchor" href="#while-there-is-a-python-wrapper-for-the-new-york-times-article-search-api-getting-article-comments-necessitates-the-use-of-the-new-york-time-api-directly-compared-to-the-article-search-wrapper-there-are-additional-differences-in-parsing-the-results-in-this-example-we-are-querying-for-the-term-misconduct-in-an-articles-body-byline-and-headline-and-filter-this-through-those-articles-that-contain-facebook-in-the-headline-and-where-the-source-is-either-reuters-the-ap-or-the-new-york-times" aria-hidden="true"><span class="octicon octicon-link"></span></a>While there is a Python wrapper for the New York Times Article Search API, getting article comments necessitates the use of the New York Time API directly. Compared to the Article Search wrapper, there are additional differences in parsing the results. In this example we are querying for the term 'misconduct' in an article's body, byline, and headline and filter this through those articles that contain Facebook in the headline and where the source is either Reuters, The AP, or the New York Times.</h3>
+
+<h3>
+<a id="using-article-search-wrapper" class="anchor" href="#using-article-search-wrapper" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using Article Search wrapper:</h3>
+
+<pre><code>from nytimesarticle import articleAPI
+api=articleAPI('yourAPI')
+
+articles = api.search( q = 'misconduct', 
+     fq = {'headline':'Facebook', 'source':['Reuters','AP', 'The New York Times']}, 
+     begin_date = 20140101 )
+</code></pre>
+
+<h3>
+<a id="calling-articles-gives-the-following-output-in-the-following-structure" class="anchor" href="#calling-articles-gives-the-following-output-in-the-following-structure" aria-hidden="true"><span class="octicon octicon-link"></span></a>Calling articles gives the following output in the following structure</h3>
+
+<pre><code>u'blog': [],
+    u'byline': {u'contributor': u'',
+     u'original': u'By VINDU GOEL',
+     u'person': [{u'firstname': u'Vindu',
+       u'lastname': u'GOEL',
+       u'organization': u'',
+       u'rank': 1,
+       u'role': u'reported'}]},
+    u'document_type': u'article',
+    u'headline': {u'main': u'Facebook Promises Deeper Review of User Research, but Is Short on the Particulars',
+     u'print_headline': u'Facebook Vow on Research Is Short on the Particulars'},
+    u'keywords': [{u'is_major': u'Y',
+</code></pre>
+
+<h3>
+<a id="parse-the-output-for-example-if-you-want-just-the-deadline-and-publish-date-from-the-output" class="anchor" href="#parse-the-output-for-example-if-you-want-just-the-deadline-and-publish-date-from-the-output" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parse the output, for example if you want just the deadline and publish date from the output</h3>
+
+<pre><code>def parse(articles): 
+    news = []
+    for i in articles['response']['docs']:
+        dic = {}
+        dic['headline'] = i['headline']
+        dic['date'] = i['pub_date'][0:10]
+        news.append(dic)
+    return news
+
+data=parse(articles)
+data[0]
+
+{'date': u'2014-10-03',
+ 'headline': {u'main': u'Facebook Promises Deeper Review of User Research, but Is Short on the Particulars',
+  u'print_headline': u'Facebook Vow on Research Is Short on the Particulars'}}
+</code></pre>
+
+<h3>
+<a id="now-we-will-use-the-new-york-times-community-api-to-get-comments-from-specific-articles-here-we-will-get-comments-for-david-brooks-sunday-op-ed-column-the-moral-bucket-list-the-api-retrieves-only-25-comments-per-call-therefore-a-loop-may-be-needed-to-retrieve-all-comments-i-just-happened-to-pick-this-article-because-it-was-one-of-the-most-e-mailed-articles-this-past-week-however-you-should-definitely-check-out-the-documentation-for-a-better-understanding" class="anchor" href="#now-we-will-use-the-new-york-times-community-api-to-get-comments-from-specific-articles-here-we-will-get-comments-for-david-brooks-sunday-op-ed-column-the-moral-bucket-list-the-api-retrieves-only-25-comments-per-call-therefore-a-loop-may-be-needed-to-retrieve-all-comments-i-just-happened-to-pick-this-article-because-it-was-one-of-the-most-e-mailed-articles-this-past-week-however-you-should-definitely-check-out-the-documentation-for-a-better-understanding" aria-hidden="true"><span class="octicon octicon-link"></span></a>Now we will use the New York Times Community API to get comments from specific articles. Here we will get comments for David Brook's Sunday Op-Ed column, "The Moral Bucket List." The API retrieves only 25 comments per call; therefore a loop may be needed to retrieve all comments. I just happened to pick this article because it was one of the most e-mailed articles this past week. However you should definitely check out the documentation for a better understanding.</h3>
+
+<h3>
+<a id="to-retrieve-comments-associated-with-a-specific-nytimescom-url-use-the-following-uri-structure" class="anchor" href="#to-retrieve-comments-associated-with-a-specific-nytimescom-url-use-the-following-uri-structure" aria-hidden="true"><span class="octicon octicon-link"></span></a>To retrieve comments associated with a specific NYTimes.com URL, use the following URI structure:</h3>
+
+<pre><code>http://api.nytimes.com/svc/community/{version}/user-content/url.json?api-key={your-API-key}&amp;url={url}[&amp;offset=int]
+</code></pre>
+
+<h3>
+<a id="what-our-structure-should-look-like" class="anchor" href="#what-our-structure-should-look-like" aria-hidden="true"><span class="octicon octicon-link"></span></a>What our structure should look like:</h3>
+
+<pre><code>bucket=&lt;span class="s"&gt;'http://api.nytimes.com/svc/community/v3/user-content/recent.json?       
+apikey=###&amp;url=http://www.nytimes.com/2015/04/12/opinion/sunday/david-brooks-the-moral-bucket-list.html'     
+</code></pre>
+
+<h3>
+<a id="we-need-to-put-it-into-a-readable-format-and-get-the-keys" class="anchor" href="#we-need-to-put-it-into-a-readable-format-and-get-the-keys" aria-hidden="true"><span class="octicon octicon-link"></span></a>We need to put it into a readable format and get the keys:</h3>
+
+<pre><code>response = urllib.urlopen(bucket).read()
+response_dictionary = json.loads(response)
+print response_dictionary.keys()    
+
+[u'debug', u'status', u'results', u'copyright']
+</code></pre>
+
+<h3>
+<a id="the-output-here-is-slightly-different-than-from-the-output-from-the-article-wrapper" class="anchor" href="#the-output-here-is-slightly-different-than-from-the-output-from-the-article-wrapper" aria-hidden="true"><span class="octicon octicon-link"></span></a>The output here is slightly different than from the output from the Article wrapper.</h3>
+
+<pre><code>response_dictionary
+
+{u'copyright': u'Copyright (c) 2015 The New York Times Company.  All Rights Reserved.',
+ u'debug': {u'version': 3.1},
+ u'results': {u'api_timestamp': u'1429416178',
+  u'comments': [{u'approveDate': u'1428857949',
+    u'asset': {u'all-properties': [{u'description': u'Not in a group',
+       u'name': u'no-group',
+       u'properties': []},
+      {u'description': u'Sort order to use when displaying comment listings',
+       u'name': u'comment-list-sort',
+       u'properties': {u'comment-list-sort-approvedate': {u'description': u'sort by approve date, oldest first',
+         u'id': 2},
+        u'comment-list-sort-approvedate-desc': {u'description': u'sort by approve date, newest first',
+         u'id': 3},
+        u'comment-list-sort-editors': {u'description': u"sort by editors' selections",
+         u'id': 5},
+        u'comment-list-sort-recommended': {u'description': u'sort by number of recommendations',
+         u'id': 4},
+        u'comment-list-sort-replies': {u'description': u'sort by replies',
+         u'id': 6}}},
+      {u'description': u'auto-moderation on or off',
+       u'name': u'auto-moderation',
+       u'properties': {u'automoderation-off': {u'description': u'auto-moderation off',
+         u'id': 8},
+        u'automoderation-on': {u'description': u'auto-moderation on',
+         u'id': 7}}},
+      {u'description': u'If we reached the max number of COMS per parent taxonomy',
+       u'name': u'reached-max-com',
+       u'properties': {u'reached-max-com-off': {u'description': u'did not reach the max number of COMS',
+         u'id': 10},
+        u'reached-max-com-on': {u'description': u'reached the max number of COMS',
+         u'id': 9}}},
+      {u'description': u'To use inline comments or overflow page',
+       u'name': u'comment-style',
+       u'properties': {u'inline-comments': {u'description': u'articles having inline comments or overflow page',
+         u'id': 11},
+        u'overflow': {u'description': u'comments on overflow page',
+         u'id': 12}}}],
+     u'assetID': 3426150,
+     u'assetTitle': u'The Moral Bucket List (12brooks)',
+     u'assetURL': u'http://www.nytimes.com/2015/04/12/opinion/sunday/david-brooks-the-moral-bucket-list.html',
+     u'createDate': u'1428778539',
+     u'labels': [{u'labelID': 9075,
+       u'labelName': u'comment-posting-disabled'}],
+     u'properties': {u'automoderation-off': {u'groupID': 2,
+       u'taxonomyID': 9188},
+      u'comment-list-sort-editors': {u'groupID': 1, u'taxonomyID': 342182},
+      u'reached-max-com-off': {u'groupID': 3, u'taxonomyID': 9188}},
+     u'source': u'url',
+     u'taxonomies': [[{u'name': u'opinion', u'taxonomyID': 9188},
+       {u'name': u'The Moral Bucket List (12brooks)', u'taxonomyID': 342182}]],
+     u'taxonomy': u'opinion/The Moral Bucket List (12brooks)',
+     u'text': [],
+     u'updateDate': u'1428853520',
+     u'vendorID': u'KCCmw84mcu9+ULVzqdzvNg=='},
+    u'assetID': 3426150,
+    u'commentBody': u'The lame
+</code></pre>
+
+<h3>
+<a id="this-is-pretty-ugly-if-you-wanted-to-loop-through-it-and-print-all-comments-you-would-have-to-do" class="anchor" href="#this-is-pretty-ugly-if-you-wanted-to-loop-through-it-and-print-all-comments-you-would-have-to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>This is pretty ugly. If you wanted to loop through it and print all comments you would have to do:</h3>
+
+<pre><code>for b in response_dictionary['results']['comments']:
+    print b['commentBody']
+</code></pre>
+
+<p>The lament of the hollow man who sees but does not understand.
+Does humiliation promote humility?  The surface form of the words ("-ation") could suggest it, but I doubt it.
+Brooks has gotten more interesting and more relevant, as he has strayed further and further from politics. His introspection provides ample food for thought, one's agreement with all his observations not necessary.<br><br>Many commenters will again yell at him for not denouncing the Republican Party in this column, or some variation of such. In doing so they are cheating themselves. Most certainly one can criticize things Brooks has written, said, and done. However, if one gives in to the easy, intellectually lazy, Manichean impulse and simply ignores the substance of what Brooks is currently writing, then that person is the real loser, waylaid by one's own doing you-know-what into the wind.<br><br>To spend one's energy reading Brooks just to chastise him seems an incredible waste of one's time and energy. I, for one, largely ignore those whose writings do not engender respect from me. However, I suppose those who are prone to do you-know-what into the wind are also likely to do you-know-what on a hydrant, trying to stake out turf, oblivious to the indifference of all but those others crowding around the same hydrant. <br><br>One line alone in this piece makes it worthwhile, even if you look no farther:<br>"It occurred to me that there were two sets of virtues, the résumé virtues and the eulogy virtues."
+At least he gets people thinking and talking.
+I think I would have to read the entire book from which this essay was adapted to know if I agree or not. It all sounds like something a Catholic would have been taught, not necessarily something original, but I would not know because I am not a Catholic myself. The sentence that absolutely confirmed this for me was "There’s joy in freely chosen obedience to organizations, ideas and people." Yes, that's what the Catholic church wants you to think. If you yield the very capacity that makes you human - the capacity of reason - then you will become a better person, they say. On the other hand Buddhism is all about introspection and using your faculties to become a better person. So I cannot sing praise to Brooks like some others here based on just this essay.
+Yes, but personal politics, especially for an opinion writer in a major newspaper, is how we express our morality and use it to influence society. One cannot separate the two so easily.
+This may indeed be good writing as you say, Scout. But knowing the context and background of the author more fully reveals it to be utter hypocrisy - or worse.<br><br>And THAT is precisely what so many posters are pointing out here. They'd be more than happy to "cut David Brooks a break" if he did indeed begin to actually practice what he preaches in this particular column.  Alas none of us are holding our breath.
+I love this reflection ( Mr Brooks, are you sure you're not a closet progressive?)<br><br>I'm so glad you mentioned Frances Perkins - who should be the 1st woman  to be placed on the twenty dollar bill. But few know of her contributions.<br><br>At my stepson's graduation from SUNY Maritime some years back, the speaker was a Coast Guard Commander - I don't remember the name - but his central message was that no one achieves anything without others; that even if you achieve some title or rank, you cannot accomplish important work without other people - so you have to learn to value others. He took such a different approach to his commencement address that I still remember the core of it, years later.
+"They are not thinking about themselves at all." <br><br>Herein lies the beauty of language... the statement should be read to mean they are not self-ish or egocentric; not caring about self-gain.
+My grown sons, my husband and I all simultaneously read your piece David Brooks and found such meaning.  I am sorry for those Democrats who commented who could only see your political leaning and could not see you as a person, a human being.  They are as bad as those Republicans who might demonize all democrats.<br>
+Gumption is  what I know I lack.  My hands are shaking so that I could hardly type.  This is the first time I was so moved after reading your essay I felt compelled to make a comment.  The word that came to me after reading your essay was AMEN.
+"...our educational systems spend more time teaching the skills and strategies you need for career success..."<br>Yeah, well, if you let us teacher actually teach important life and person-hood skills instead of forcing us to prepare students for tests all the time, we might do otherwise.
+Of course democrats are all virtuous.  Not a smidgen of corruption, ego, greed  anywhere.  Amazed that William and other commenters have to turn everything political and demean the group that doesn't think like them.
+I probably haven't agreed with a word Mr. Brooks has written in years, but this column made me pensive. For me it sums up the dichotomous human condition of doing right for the wrong reasons as well as doing wrong for the right reasons. I hope a few members of Congress read and think about this essay. Names withheld to protect the guilty.
+What an amazing essay. I just read this piece twice and I have to say, I feel as though Mr. Brooks was describing me to a T. I have struggled quite a bit in my life, going down a dark path that wasn't who I was. But I pulled myself out of it, put myself through college for a second time and am not graduating with honors and going onto graduate school in NYC to get my master's in International Affairs to do work in human rights in some of the most conflicted and poorest nations in the world, to help the most vulnerable populations. It actually scared me how much this piece spoke to me. Now I have to buy his book. Thank you, Mr. Brooks.
+Maybe it's because I don't enjoy being lectured about morality by someone who spends the bulk of his professional life supporting, in the most public way, the most immoral elements in American politics. I don't see what's self-serving or "jerky" about that.<br><br>Lecturing others about morality when you've made a career out of serving as lapdog to the 1% takes a good bit of what we in New York call chutzpah.<br><br>"David Brooks writes about ways to improve yourself." Gee, thanks David.
+Mr. Brooks's essay is sweet and inspiring in places, one supposes,  but pales in comparison to the affective and practical valus of ts newsprint neighbor, the reflections of reporter John Burns and the drawing forth of the contents of his moral sachel. From these contents the imperative to fight ideology, and orthodoxies,  is brought into focus and summons us to do battle. Brooks distills his ideas admirably, but in the end his hopes are cautious ministrations and run to the personal those losing the energy needed for cultural change.  Burns, on the other hand, a journalist who has seen and smelled physical death and cultural destruction over and over, has the credentials (and, importantly, the  literary skill) needed to provide  a contemporary revelation of Armageddon, at once terrifying and universal rather than warm and pretty and individual. 
+"But people on the road to inner light do not find their vocations by asking, what do I want from life? They ask, what is life asking of me? How can I match my intrinsic talent with one of the world’s deep needs?"  Life is asking of me at this minute that I write a note to Hillary Clinton who has a chance to match her intrinsic talent with the world's deep needs and beg her to add Elizabeth Warren to her ticket as running mate.  You have some popularity but you need to add greater courage and idealism to your list of skills.  Warren knows what life is asking of her.  It is to protect democracy for the people of this country and, at least by our example, for the world.  Together you could set our entire nation on the road to inner light.  Together you could take up the banner of change and hope.   Otherwise, the boys will outspend and outtalk you and a great opportunity for humanity will be lost.<br>
+Yes, Mr. Brooks.  You have a lot of power in Republican circles.  How about using some of it for good?
+I hate to say this, but if you only meet these people once in a rare while, its probably because you don't hang out with this kind or crowd. There's still people who care about others: many teachers, clergy, social workers, doctors, therapists, civil rights activists, etc. still care, in spite of those who try to drag them down.
+I wonder how David's Republican fellow-travelers would characterize these great Americans if they were alive and active today. Actually, I know: Liberals who HATE AMERICA!
+"But our culture and our educational systems spend more time teaching the skills and strategies you need for career success than the qualities you need to radiate that sort of inner light. "<br><br>Actually, the mission of places of higher education was precisely to nurture the best of the human spirit in each of us. All those 'useless and indulgent' courses - poetry, literature, philosophy, history, criticism - were valuable tools in this.  This was before political expediency and short-sightedness decided to turn colleges and universities into 'economic  powerhouses' or 'skills-training hubs' - much as the author has advocated himself.<br><br>This paean to the true education of a person is lovely. But it is too late, because we collectively (including the author) put a price tag on our souls, and then held a flash sale.
+I recognized myself in this essay. But I am not the "person who radiates an inner light." I am the person who has lived for achievement, and now find myself, at a rather advanced age, "separated from the deepest meaning of life", as I have begun to notice in the last few years. I have strongly experienced "the humiliating gap" between what I want to be and what I actually am. When you are young, active, working, it is easy to fool yourself. When you are old and less is going on--not so much.<br><br>A related thought: I recently saw a film titled "The Dhamma Brothers", about the introduction of a Vipassana meditation program in a maximum security prison in Alabama. It is hard to think of a setting where participants have more genuine cause for regret, or fewer resources to improve their lives than a maximum security prison. Most of the men were serving life or LWOP. It was most impressive to see the growth of moral consciousness in some of these men. <br><br>Some will say their changes are superficial, but how would another person know? In that last paragraph,David writes that we don't build our lives "by being better than others", but by being better than we were. We can only know that about ourselves, not for others.
+Agree with your comment.  There are plenty of people on the left side of the political spectrum that are nasty and petty too.<br>
+A while ago, David, you were enthralled by the "resume building" activities of your daughter's friends. Starting their own businesses (which were of marginal value to society). Its great that you see the other side, but people you praise in this article are probably not Republicans.</p>
+
+<h3>
+<a id="we-write-a-function-to-extract-only-information-we-are-interested-in" class="anchor" href="#we-write-a-function-to-extract-only-information-we-are-interested-in" aria-hidden="true"><span class="octicon octicon-link"></span></a>We write a function to extract only information we are interested in:</h3>
+
+<pre><code>def parse(mail):
+
+    brooks = []
+    for b in mail:
+        dic = {}
+        dic['comment'] = b['commentBody']
+        dic['date'] = b['createDate']
+        dic['comment_type'] = b['commentType']
+        dic['editorsSelection'] =b['editorsSelection']
+        dic['email'] = b['email']
+        dic['recommend'] = b['recommendationCount']
+        dic['replies'] = b['replies']
+        dic['name'] = b['userDisplayName']
+        dic['location'] = b['userLocation']
+        dic['login'] = b['login']
+
+        brooks.append(dic)
+    return brooks`
+</code></pre>
+
+<h3>
+<a id="call-the-function-and-view-the-first-entry" class="anchor" href="#call-the-function-and-view-the-first-entry" aria-hidden="true"><span class="octicon octicon-link"></span></a>Call the function and view the first entry:</h3>
+
+<pre><code>comments=response_dictionary['results']['comments']
+comments=parse(comments)
+comments[0]
+
+{'comment': u'The lament of the hollow man who sees but does not understand.',
+ 'comment_type': u'comment',
+ 'date': u'1428853503',
+ 'editorsSelection': 0,
+ 'email': u'wilkinson.eileen@gmail.com',
+ 'location': u'Maine',
+ 'login': None,
+ 'name': u'Eileen Wilkinson',
+ 'recommend': 4,
+ 'replies': []}
+</code></pre>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Irgn/quant">New York Times API</a> is maintained by <a href="https://github.com/Irgn">Irgn</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
